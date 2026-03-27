@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analisador de Exames · Nutri que Lucra</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1a1410;--ink-med:#2d2218;--gold:#9d8768;--gold-dark:#6b5740;--gold-light:#c4b49e;--gold-pale:#f5efe8;--cream:#faf7f3;--sand:#f0e9df;--muted:#7a6a58;--ghost:#b09880;--white:#fff;--green:#2a6e47;--green-dark:#1b3d27;--green-pale:#edf7f1;--red:#c0392b;--red-pale:#fdf0ee;--yellow:#b8860b;--yellow-pale:#fefae8;--blue:#2563a8;--blue-pale:#eef4fd}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Poppins',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh}
+body::after{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(157,135,104,.07) 1px,transparent 1px);background-size:30px 30px;pointer-events:none;z-index:0}
+.app{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 20px 80px}
+
+/* HEADER */
+.header{padding:24px 0 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(196,180,158,.2);margin-bottom:36px}
+.logo{font-family:'Lora',serif;font-size:16px;font-weight:600;color:var(--gold-dark)}
+.logo span{color:var(--gold);font-style:italic}
+.logo-sub{font-size:10px;color:var(--ghost);letter-spacing:.08em;text-transform:uppercase;display:block;margin-top:2px}
+.badge{font-size:10px;font-weight:500;color:var(--gold);border:1px solid rgba(157,135,104,.35);padding:5px 14px;border-radius:99px}
+
+/* AVISO TOPO */
+.aviso-topo{display:flex;gap:12px;align-items:flex-start;background:#fef9ec;border:1px solid rgba(184,134,11,.3);border-radius:12px;padding:14px 18px;margin-bottom:24px}
+.aviso-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.aviso-txt{font-size:12.5px;color:#5a4a1a;line-height:1.6}
+.aviso-txt strong{font-weight:600;color:#3d3010}
+
+/* LGPD */
+.lgpd-note{font-size:11px;color:var(--ghost);background:var(--sand);border-radius:8px;padding:9px 14px;margin-bottom:18px;line-height:1.5}
+
+/* CHIPS HIPÓTESE */
+.hipotese-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+.hchip{padding:5px 13px;border:1px solid rgba(196,180,158,.4);border-radius:99px;font-size:11.5px;color:var(--muted);cursor:pointer;background:none;font-family:'Poppins',sans-serif;transition:all .15s;white-space:nowrap}
+.hchip:hover{border-color:var(--gold);color:var(--gold-dark);background:var(--gold-pale)}
+.hchip.on{border-color:var(--gold-dark);background:var(--gold-pale);color:var(--gold-dark);font-weight:500}
+
+/* REFERÊNCIAS BIBLIOGRÁFICAS */
+.ref-box{background:var(--white);border:1px solid rgba(196,180,158,.18);border-radius:13px;padding:22px;margin-bottom:14px}
+.ref-title{font-family:'Lora',serif;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:7px}
+.ref-list{display:flex;flex-direction:column;gap:8px}
+.ref-item{font-size:11.5px;color:var(--muted);line-height:1.6;padding-left:16px;position:relative}
+.ref-item::before{content:'';position:absolute;left:0;top:8px;width:6px;height:1px;background:var(--gold)}
+
+/* FORM */
+.sec-title{font-family:'Lora',serif;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.sec-num{width:26px;height:26px;border-radius:50%;background:var(--gold-pale);border:1px solid rgba(196,180,158,.4);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--gold-dark);flex-shrink:0}
+.card{background:var(--white);border:1px solid rgba(196,180,158,.2);border-radius:14px;padding:24px;margin-bottom:18px;box-shadow:0 2px 16px rgba(107,87,64,.05)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.field input,.field select,.field textarea{font-family:'Poppins',sans-serif;font-size:13px;color:var(--ink);background:var(--cream);border:1.5px solid rgba(196,180,158,.3);border-radius:9px;padding:10px 13px;outline:none;transition:border-color .2s,box-shadow .2s}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(157,135,104,.1)}
+.field textarea{resize:vertical;min-height:70px;line-height:1.6}
+
+/* BUSCA DE EXAME */
+.search-wrap{position:relative;margin-bottom:16px}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ghost);pointer-events:none}
+.search-input{width:100%;font-family:'Poppins',sans-serif;font-size:13px;color:var(--ink);background:var(--white);border:1.5px solid rgba(196,180,158,.3);border-radius:10px;padding:11px 14px 11px 42px;outline:none;transition:border-color .2s,box-shadow .2s}
+.search-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(157,135,104,.1)}
+.search-input::placeholder{color:var(--ghost)}
+.search-results{display:none;position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1px solid rgba(196,180,158,.3);border-radius:10px;box-shadow:0 8px 24px rgba(107,87,64,.12);z-index:100;max-height:240px;overflow-y:auto}
+.search-results.show{display:block}
+.sr-item{padding:10px 16px;cursor:pointer;font-size:13px;color:var(--ink);border-bottom:1px solid rgba(196,180,158,.1);transition:background .15s;display:flex;align-items:center;justify-content:space-between}
+.sr-item:last-child{border-bottom:none}
+.sr-item:hover{background:var(--gold-pale)}
+.sr-item .sr-name{font-weight:500}
+.sr-item .sr-ref{font-size:11px;color:var(--ghost)}
+.sr-empty{padding:14px 16px;font-size:13px;color:var(--ghost);font-style:italic}
+
+/* EXAMES ADICIONADOS */
+.added-list{display:flex;flex-direction:column;gap:8px;margin-bottom:4px}
+.added-item{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--cream);border:1.5px solid rgba(196,180,158,.25);border-radius:10px}
+.ai-name{font-size:12px;font-weight:500;color:var(--muted);flex:1;min-width:0}
+.ai-ref{font-size:10px;color:var(--ghost);display:block;margin-top:1px}
+.ai-input-wrap{position:relative;width:130px;flex-shrink:0}
+.ai-input{font-family:'Poppins',sans-serif;font-size:13px;color:var(--ink);background:var(--white);border:1.5px solid rgba(196,180,158,.3);border-radius:8px;padding:8px 28px 8px 10px;outline:none;width:100%;transition:all .2s}
+.ai-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(157,135,104,.1)}
+.ai-input.ok{border-color:rgba(42,110,71,.4);background:var(--green-pale)}
+.ai-input.low,.ai-input.alert{border-color:rgba(192,57,43,.35);background:var(--red-pale)}
+.ai-input.borderline{border-color:rgba(184,134,11,.4);background:var(--yellow-pale)}
+.ai-dot{position:absolute;right:9px;top:50%;transform:translateY(-50%);width:7px;height:7px;border-radius:50%;display:none}
+.ai-dot.ok{background:var(--green);display:block}
+.ai-dot.alert,.ai-dot.low{background:var(--red);display:block}
+.ai-dot.borderline{background:var(--yellow);display:block}
+.ai-remove{background:none;border:none;color:var(--ghost);cursor:pointer;font-size:16px;padding:0 2px;line-height:1;flex-shrink:0;transition:color .15s}
+.ai-remove:hover{color:var(--red)}
+.empty-state{text-align:center;padding:24px;color:var(--ghost);font-size:13px;font-style:italic;border:1.5px dashed rgba(196,180,158,.3);border-radius:10px}
+
+/* BTN ANALISAR */
+.btn-analyze{width:100%;padding:17px;background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;font-family:'Poppins',sans-serif;font-size:15px;font-weight:500;border:none;border-radius:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:6px}
+.btn-analyze:hover{opacity:.92;transform:translateY(-1px);box-shadow:0 8px 24px rgba(27,61,39,.25)}
+
+/* RESULTADO */
+.result{display:none}
+.result.show{display:block;animation:fadeUp .35s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.res-header{background:linear-gradient(135deg,var(--ink),var(--ink-med));border-radius:16px;padding:28px;margin-bottom:18px;position:relative;overflow:hidden}
+.res-header::before{content:'';position:absolute;right:-30px;top:-30px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.04)}
+.res-tag{font-size:9px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:rgba(196,180,158,.7);margin-bottom:8px}
+.res-name{font-family:'Lora',serif;font-size:20px;font-weight:600;color:#fff;position:relative;z-index:1}
+.res-meta{font-size:12px;color:rgba(255,255,255,.45);margin-top:3px;position:relative;z-index:1}
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin-bottom:18px}
+.mc{border-radius:11px;padding:13px;border:1px solid transparent}
+.mc.ok{background:var(--green-pale);border-color:rgba(42,110,71,.2)}
+.mc.alert{background:var(--red-pale);border-color:rgba(192,57,43,.2)}
+.mc.borderline{background:var(--yellow-pale);border-color:rgba(184,134,11,.2)}
+.mc.low{background:var(--blue-pale);border-color:rgba(37,99,168,.2)}
+.mc-name{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.mc-val{font-family:'Lora',serif;font-size:18px;font-weight:600;color:var(--ink)}
+.mc-val span{font-size:10px;font-weight:400}
+.mc-st{font-size:10px;margin-top:3px;font-weight:500}
+.mc.ok .mc-st{color:var(--green)}.mc.alert .mc-st{color:var(--red)}.mc.borderline .mc-st{color:var(--yellow)}.mc.low .mc-st{color:var(--blue)}
+.rsec{background:var(--white);border:1px solid rgba(196,180,158,.18);border-radius:13px;padding:22px;margin-bottom:14px}
+.rsec-title{font-family:'Lora',serif;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.rsec-body{font-size:13px;font-weight:300;color:var(--muted);line-height:1.8}
+.rsec-body p{margin-bottom:10px}.rsec-body p:last-child{margin-bottom:0}
+.rsec-body strong{font-weight:600;color:var(--ink)}
+.conduta-list{display:flex;flex-direction:column;gap:8px}
+.ci{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:9px;font-size:13px;line-height:1.5}
+.ci.prior{background:var(--green-pale);border:1px solid rgba(42,110,71,.15)}
+.ci.nutr{background:var(--gold-pale);border:1px solid rgba(196,180,158,.3)}
+.ci.avoid{background:var(--red-pale);border:1px solid rgba(192,57,43,.15)}
+.ci-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.ci-text{color:var(--ink)}
+.ci-text strong{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;color:var(--muted)}
+.macros-bar{display:flex;height:10px;border-radius:99px;overflow:hidden;margin:10px 0}
+.mc-c{background:linear-gradient(90deg,#9d8768,#c4b49e)}.mc-p{background:linear-gradient(90deg,#2a6e47,#3a9a67)}.mc-g{background:linear-gradient(90deg,#b8860b,#d4a017)}
+.macros-leg{display:flex;gap:14px;flex-wrap:wrap}
+.ml-item{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.ml-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.enc-list{display:flex;flex-direction:column;gap:8px}
+.enc-item{display:flex;align-items:flex-start;gap:11px;padding:12px 15px;background:var(--gold-pale);border-radius:9px;border:1px solid rgba(196,180,158,.25)}
+.enc-ico{font-size:17px;flex-shrink:0}
+.enc-txt{font-size:13px;color:var(--ink);line-height:1.5}
+.enc-txt strong{font-weight:600;color:var(--gold-dark);display:block;margin-bottom:2px}
+
+/* CARDÁPIO */
+.cardapio-btn{display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,var(--gold-dark),var(--gold));color:#fff;border:none;border-radius:99px;font-family:'Poppins',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.cardapio-btn:hover{opacity:.9;transform:translateY(-1px)}
+.cardapio-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.cardapio-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.cg-item{background:var(--cream);border:1px solid rgba(196,180,158,.25);border-radius:10px;padding:13px}
+.cg-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:5px}
+.cg-text{font-size:13px;color:var(--ink);line-height:1.55}
+
+/* PRONTUÁRIO */
+.prontuario-box{background:var(--white);border:1px solid rgba(196,180,158,.2);border-radius:13px;overflow:hidden;margin-bottom:14px}
+.prontuario-header{background:linear-gradient(135deg,var(--gold-dark),var(--gold));padding:16px 22px;display:flex;align-items:center;justify-content:space-between}
+.prontuario-header h3{font-family:'Lora',serif;font-size:14px;font-weight:600;color:#fff}
+.prontuario-header p{font-size:11px;color:rgba(255,255,255,.7);margin-top:2px}
+.btn-copy-pront{display:flex;align-items:center;gap:7px;padding:8px 18px;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:99px;font-family:'Poppins',sans-serif;font-size:12px;font-weight:500;cursor:pointer;transition:all .2s;flex-shrink:0}
+.btn-copy-pront:hover{background:rgba(255,255,255,.3)}
+.btn-copy-pront.copied{background:rgba(255,255,255,.35)}
+.prontuario-body{padding:22px;font-family:'Poppins',sans-serif;font-size:12.5px;line-height:1.8;color:var(--ink);white-space:pre-wrap;max-height:400px;overflow-y:auto}
+.prontuario-body .p-section{margin-bottom:16px}
+.prontuario-body .p-title{font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--gold-dark);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid rgba(196,180,158,.2)}
+.prontuario-body .p-content{color:var(--muted);font-size:12.5px;line-height:1.8}
+
+/* BTN NOVA */
+.btn-new{width:100%;padding:14px;background:var(--white);border:1.5px solid rgba(196,180,158,.4);border-radius:13px;font-family:'Poppins',sans-serif;font-size:14px;font-weight:500;color:var(--gold-dark);cursor:pointer;transition:all .2s;margin-top:8px}
+.btn-new:hover{border-color:var(--gold);background:var(--gold-pale)}
+
+@media(max-width:600px){.cardapio-grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}.added-item{flex-wrap:wrap}.ai-input-wrap{width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="header">
+  <div class="logo">nutri <span>que lucra</span><span class="logo-sub">Analisador de Exames</span></div>
+  <div class="badge">Exclusivo NQL</div>
+</header>
+
+<!-- AVISO TOPO -->
+<div class="aviso-topo">
+  <div class="aviso-icon">⚠️</div>
+  <div class="aviso-txt">
+    <strong>Ferramenta de apoio clínico</strong>: Esta análise pode conter imprecisões e serve como <strong>suporte</strong> à conduta da nutricionista, não a substitui. A responsabilidade técnica pelo atendimento é inteiramente da profissional. Sempre revise os resultados com seu julgamento clínico.
+  </div>
+</div>
+
+<div id="formSection">
+
+  <!-- PACIENTE -->
+  <div class="sec-title"><span class="sec-num">1</span>Dados da Paciente</div>
+  <div class="card">
+    <div class="row">
+      <div class="field"><label>Nome completo da paciente</label><input type="text" id="pac-nome" placeholder="Nome da paciente"></div>
+      <div class="field"><label>Data de nascimento</label><input type="date" id="pac-nasc"></div>
+      <div class="field"><label>Sexo</label><select id="pac-sexo"><option value="feminino">Feminino</option><option value="masculino">Masculino</option></select></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Peso (kg)</label><input type="number" id="pac-peso" placeholder="Ex: 68"></div>
+      <div class="field"><label>Altura (cm)</label><input type="number" id="pac-altura" placeholder="Ex: 162"></div>
+      <div class="field"><label>Data do atendimento</label><input type="date" id="pac-data"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>Queixa principal</label><input type="text" id="pac-queixa" placeholder="Ex: cansaço, ganho de peso, irregularidade menstrual"></div>
+      <div class="field"><label>Diagnóstico / Condição associada</label><input type="text" id="pac-condicao" placeholder="Ex: SOP, hipotireoidismo, diabetes tipo 2"></div>
+    </div>
+
+    <!-- HIPÓTESE DIAGNÓSTICA COM CHIPS -->
+    <div class="field" style="margin-bottom:10px">
+      <label>Hipótese diagnóstica nutricional</label>
+      <div class="hipotese-chips" id="hipoteseChips">
+        <button class="hchip" onclick="setHipotese(this,'Provável deficiência de micronutrientes (ferro, vitamina D e/ou B12)')">Deficiência de micronutrientes</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável resistência insulínica e síndrome metabólica')">Resistência insulínica</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável disfunção tireoidiana (hipotireoidismo subclínico/Hashimoto)')">Disfunção tireoidiana</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável anemia ferropriva')">Anemia ferropriva</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável anemia megaloblástica (deficiência de B12/folato)')">Anemia megaloblástica</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável processo inflamatório crônico de baixo grau')">Inflamação crônica</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável dislipidemia mista')">Dislipidemia</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável síndrome do ovário policístico com impacto metabólico')">SOP metabólica</button>
+        <button class="hchip" onclick="setHipotese(this,'Provável deficiência de vitamina D com impacto imunológico e hormonal')">Deficiência de vitamina D</button>
+        <button class="hchip" onclick="setHipotese(this,'Sem alterações bioquímicas relevantes, paciente em eutrofia nutricional')">Eutrofia nutricional</button>
+      </div>
+      <input type="text" id="pac-hipotese" placeholder="Ou digite livremente a hipótese diagnóstica..." style="margin-top:8px">
+    </div>
+
+    <div class="row" style="margin-bottom:0">
+      <div class="field"><label>Nome completo da nutricionista</label><input type="text" id="pac-nutri" placeholder="Seu nome completo"></div>
+      <div class="field"><label>CRN</label><input type="text" id="pac-crn" placeholder="Ex: CRN-3 12345"></div>
+    </div>
+  </div>
+  <div class="lgpd-note">🔒 Nenhum dado é salvo ou transmitido. Tudo funciona localmente no seu navegador, em conformidade com a LGPD.</div>
+
+  <!-- EXAMES -->
+  <div class="sec-title"><span class="sec-num">2</span>Valores dos Exames</div>
+  <div class="card">
+    <!-- BUSCA -->
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="7" cy="7" r="5"/><path d="M11 11l3 3"/>
+      </svg>
+      <input class="search-input" id="searchInput" type="text"
+        placeholder="Buscar exame... (ex: TSH, vitamina D, ferritina)"
+        oninput="doSearch()" onfocus="doSearch()" autocomplete="off">
+      <div class="search-results" id="searchResults"></div>
+    </div>
+
+    <!-- LISTA DE EXAMES ADICIONADOS -->
+    <div class="added-list" id="addedList">
+      <div class="empty-state" id="emptyState">
+        🔍 Busque um exame acima para começar a adicionar os valores
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-analyze" onclick="analisar()">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8">
+      <circle cx="9" cy="9" r="7"/><path d="M9 5v4l2.5 2.5"/>
+    </svg>
+    Gerar análise completa
+  </button>
+</div>
+
+<!-- RESULTADO -->
+<div class="result" id="result">
+  <div class="res-header">
+    <div class="res-tag">Análise Nutricional Funcional</div>
+    <div class="res-name" id="rn"></div>
+    <div class="res-meta" id="rm"></div>
+  </div>
+  <div class="mgrid" id="markers"></div>
+  <div class="rsec"><div class="rsec-title">🔍 Interpretação Funcional</div><div class="rsec-body" id="r-interp"></div></div>
+  <div class="rsec"><div class="rsec-title">🥗 Conduta Nutricional</div><div class="conduta-list" id="r-conduta"></div></div>
+  <div class="rsec">
+    <div class="rsec-title">📊 Macronutrientes Sugeridos</div>
+    <div class="macros-bar" id="mbar"></div>
+    <div class="macros-leg" id="mleg"></div>
+    <div class="rsec-body" style="margin-top:10px" id="r-macro-txt"></div>
+  </div>
+  <div class="rsec">
+    <div class="rsec-title">🍽️ Cardápio Sugerido (1 dia)</div>
+    <div id="cardapio-wrap">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Geração do cardápio é feita separadamente.</p>
+      <button class="cardapio-btn" id="btnCard" onclick="gerarCardapio()">🍽️ Gerar cardápio personalizado</button>
+    </div>
+    <div class="cardapio-grid" id="cardapio-grid" style="display:none"></div>
+  </div>
+  <div class="rsec"><div class="rsec-title">👨‍⚕️ Encaminhamentos</div><div class="enc-list" id="r-enc"></div></div>
+
+  <!-- REFERÊNCIAS BIBLIOGRÁFICAS -->
+  <div class="ref-box">
+    <div class="ref-title">📚 Referências Bibliográficas</div>
+    <div class="ref-list" id="r-refs"></div>
+  </div>
+
+  <!-- PRONTUÁRIO -->
+  <div class="prontuario-box">
+    <div class="prontuario-header">
+      <div>
+        <h3>📋 Prontuário Nutricional</h3>
+        <p>Conforme Resolução CFN nº 667/2020 · Pronto para copiar e arquivar</p>
+      </div>
+      <button class="btn-copy-pront" id="btnCopyPront" onclick="copyProntuario()">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/>
+        </svg>
+        Copiar prontuário
+      </button>
+    </div>
+    <div class="prontuario-body" id="prontuarioBody"></div>
+  </div>
+
+  <button class="btn-new" onclick="novaAnalise()">← Nova análise</button>
+</div>
+
+</div>
+<script>
+const R={
+  // ── METABÓLICO ──────────────────────────────────
+  // Glicemia: ADA 2024 — normal <100, pré-DM 100-125, DM ≥126
+  // Funcional (medicina funcional): ótimo 72-85
+  glicemia:{l:60,okL:72,okH:85,h:126,u:'mg/dL',n:'Glicemia em jejum',cat:'Metabólico'},
+  // Insulina: funcional <5-8; resistência ≥15
+  insulina:{l:0,okL:0,okH:8,h:15,u:'µUI/mL',n:'Insulina em jejum',cat:'Metabólico'},
+  // HOMA-IR: corte funcional <2.0; patológico >2.5-3.0
+  homa:{l:0,okL:0,okH:2.0,h:2.9,u:'',n:'HOMA-IR',cat:'Metabólico'},
+  // HbA1c: ADA — normal <5.7%; pré-DM 5.7-6.4%; DM ≥6.5%
+  hba1c:{l:0,okL:0,okH:5.6,h:6.5,u:'%',n:'Hemoglobina Glicada (HbA1c)',cat:'Metabólico'},
+  // Ácido úrico: F <6.0 M <7.0 (gota ≥7.0/8.0)
+  acido_urico:{l:0,okL:2.5,okH:5.5,h:7.0,u:'mg/dL',n:'Ácido Úrico',cat:'Metabólico'},
+
+  // ── LIPÍDIOS ────────────────────────────────────
+  // SBC 2017: Col total desejável <200; limítrofe 200-239; alto ≥240
+  col_total:{l:0,okL:100,okH:190,h:240,u:'mg/dL',n:'Colesterol Total',cat:'Lipídios'},
+  // HDL: desejável F >50 M >40; ótimo funcional >60
+  hdl:{l:0,okL:60,okH:999,h:999,u:'mg/dL',n:'HDL Colesterol',cat:'Lipídios'},
+  // LDL: ótimo <100; desejável <130; limítrofe 130-159; alto ≥160
+  ldl:{l:0,okL:0,okH:100,h:160,u:'mg/dL',n:'LDL Colesterol',cat:'Lipídios'},
+  // TG: desejável <150; limítrofe 150-199; alto 200-499; muito alto ≥500
+  tg:{l:0,okL:0,okH:100,h:200,u:'mg/dL',n:'Triglicerídeos',cat:'Lipídios'},
+  // VLDL calculado (TG/5): normal <30
+  vldl:{l:0,okL:0,okH:30,h:40,u:'mg/dL',n:'VLDL Colesterol',cat:'Lipídios'},
+
+  // ── TIREOIDE ────────────────────────────────────
+  // TSH: AACE recomenda 0.45-4.12; funcional 1.0-2.5
+  tsh:{l:0,okL:1.0,okH:2.5,h:4.5,u:'mUI/L',n:'TSH',cat:'Tireoide'},
+  // T4 livre: laboratorial 0.7-1.8; funcional 1.0-1.5 ng/dL
+  t4l:{l:0,okL:1.0,okH:1.5,h:1.8,u:'ng/dL',n:'T4 Livre',cat:'Tireoide'},
+  // T3 livre: laboratorial 2.3-4.2; funcional 3.0-4.0 pg/mL
+  t3l:{l:0,okL:3.0,okH:4.0,h:4.2,u:'pg/mL',n:'T3 Livre',cat:'Tireoide'},
+  // T3 reverso: normal <24; funcional <15 ng/dL
+  t3r:{l:0,okL:0,okH:15,h:24,u:'ng/dL',n:'T3 Reverso',cat:'Tireoide'},
+  // Anti-TPO: negativo <35 UI/mL (alguns labs <60)
+  antitpo:{l:0,okL:0,okH:35,h:35,u:'UI/mL',n:'Anti-TPO',cat:'Tireoide'},
+  // Anti-Tg: negativo <40 UI/mL
+  antitg:{l:0,okL:0,okH:40,h:40,u:'UI/mL',n:'Anti-Tireoglobulina',cat:'Tireoide'},
+
+  // ── HORMONAL ────────────────────────────────────
+  estradiol:{l:0,okL:0,okH:999,h:999,u:'pg/mL',n:'Estradiol',cat:'Hormonal'},
+  // Progesterona fase lútea: >5 adequado; >10 ovulação confirmada
+  prog:{l:0,okL:5,okH:999,h:999,u:'ng/mL',n:'Progesterona',cat:'Hormonal'},
+  fsh:{l:0,okL:3,okH:10,h:25,u:'mUI/mL',n:'FSH',cat:'Hormonal'},
+  lh:{l:0,okL:2,okH:15,h:30,u:'mUI/mL',n:'LH',cat:'Hormonal'},
+  // Prolactina: normal até 20-25 ng/mL (varia por lab)
+  prolactina:{l:0,okL:0,okH:20,h:25,u:'ng/mL',n:'Prolactina',cat:'Hormonal'},
+  // DHEA-S feminino: 65-380 µg/dL (varia por idade)
+  dhea:{l:0,okL:65,okH:380,h:430,u:'µg/dL',n:'DHEA-S',cat:'Hormonal'},
+  // Cortisol manhã (8h): 5-25 µg/dL lab; funcional 10-18
+  cortisol:{l:0,okL:10,okH:18,h:25,u:'µg/dL',n:'Cortisol (manhã)',cat:'Hormonal'},
+  // Testosterona total feminina: 15-70 ng/dL
+  testo:{l:0,okL:15,okH:70,h:100,u:'ng/dL',n:'Testosterona Total',cat:'Hormonal'},
+  shbg:{l:0,okL:20,okH:120,h:200,u:'nmol/L',n:'SHBG',cat:'Hormonal'},
+
+  // ── INFLAMATÓRIO ────────────────────────────────
+  // PCR-us: baixo risco CV <1; médio 1-3; alto >3 mg/L (AHA)
+  // Funcional: ótimo <0.5 mg/L
+  pcr:{l:0,okL:0,okH:0.5,h:3.0,u:'mg/L',n:'PCR Ultrassensível',cat:'Inflamatório'},
+  // VHS: F até 20; M até 15 mm/h (Westergren)
+  vhs:{l:0,okL:0,okH:20,h:40,u:'mm/h',n:'VHS',cat:'Inflamatório'},
+  // Homocisteína: ótimo <8; normal <15; risco ≥15 µmol/L
+  homocisteina:{l:0,okL:0,okH:8,h:15,u:'µmol/L',n:'Homocisteína',cat:'Inflamatório'},
+
+  // ── HEMOGRAMA ───────────────────────────────────
+  // Hemoglobina OMS: anemia F <12; M <13 g/dL
+  hb:{l:0,okL:12,okH:16,h:17.5,u:'g/dL',n:'Hemoglobina',cat:'Hemograma'},
+  ht:{l:0,okL:36,okH:46,h:52,u:'%',n:'Hematócrito',cat:'Hemograma'},
+  // VCM: microcítica <80; normocítica 80-100; macrocítica >100
+  vcm:{l:0,okL:82,okH:96,h:100,u:'fL',n:'VCM',cat:'Hemograma'},
+  hcm:{l:0,okL:27,okH:33,h:35,u:'pg',n:'HCM',cat:'Hemograma'},
+  chcm:{l:0,okL:31,okH:36,h:38,u:'g/dL',n:'CHCM',cat:'Hemograma'},
+  rdw:{l:0,okL:11,okH:14,h:16,u:'%',n:'RDW',cat:'Hemograma'},
+  leuco:{l:0,okL:4000,okH:10000,h:12000,u:'/mm³',n:'Leucócitos',cat:'Hemograma'},
+  neutrofilos:{l:0,okL:1800,okH:7000,h:8000,u:'/mm³',n:'Neutrófilos',cat:'Hemograma'},
+  linfocitos:{l:0,okL:1000,okH:4800,h:5000,u:'/mm³',n:'Linfócitos',cat:'Hemograma'},
+  plaquetas:{l:0,okL:150000,okH:400000,h:450000,u:'/mm³',n:'Plaquetas',cat:'Hemograma'},
+
+  // ── FERRO E VITAMINAS ────────────────────────────
+  // Ferro sérico: F 60-170; M 70-180 µg/dL
+  ferro:{l:0,okL:60,okH:160,h:180,u:'µg/dL',n:'Ferro Sérico',cat:'Ferro e Vitaminas'},
+  // Ferritina funcional: ótimo 50-150; depleção <30; excesso >300
+  ferritina:{l:0,okL:50,okH:150,h:300,u:'ng/mL',n:'Ferritina',cat:'Ferro e Vitaminas'},
+  transferrina:{l:0,okL:200,okH:360,h:400,u:'mg/dL',n:'Transferrina',cat:'Ferro e Vitaminas'},
+  // Saturação de transferrina: normal 20-50%; deficiência <16%
+  sat_transf:{l:0,okL:20,okH:50,h:60,u:'%',n:'Saturação de Transferrina',cat:'Ferro e Vitaminas'},
+  // Vitamina D: deficiente <20; insuficiente 20-29; suficiente 30-100; tóxico >150 ng/mL
+  // Funcional (Endocrine Society): ótimo 50-80 ng/mL
+  vitd:{l:0,okL:50,okH:80,h:100,u:'ng/mL',n:'Vitamina D (25-OH)',cat:'Ferro e Vitaminas'},
+  // B12: deficiente <200; insuficiente 200-300; funcional >500-600 pg/mL
+  b12:{l:0,okL:500,okH:999,h:999,u:'pg/mL',n:'Vitamina B12',cat:'Ferro e Vitaminas'},
+  folato:{l:0,okL:10,okH:999,h:999,u:'ng/mL',n:'Folato sérico',cat:'Ferro e Vitaminas'},
+  // Zinco: normal 70-120; funcional 80-120 µg/dL
+  zinco:{l:0,okL:80,okH:120,h:140,u:'µg/dL',n:'Zinco',cat:'Ferro e Vitaminas'},
+  // Magnésio sérico: 1.7-2.4 mg/dL (sérico é inespecífico — eritrócito mais fidedigno)
+  magnesio:{l:0,okL:1.9,okH:2.5,h:3.0,u:'mg/dL',n:'Magnésio',cat:'Ferro e Vitaminas'},
+  // Selênio: 63-160 µg/L (plasma)
+  selenio:{l:0,okL:70,okH:150,h:200,u:'µg/L',n:'Selênio',cat:'Ferro e Vitaminas'},
+  // Cálcio sérico: 8.5-10.5 mg/dL
+  calcio:{l:0,okL:8.5,okH:10.2,h:10.5,u:'mg/dL',n:'Cálcio sérico',cat:'Ferro e Vitaminas'},
+  fosforo:{l:0,okL:2.5,okH:4.5,h:5.0,u:'mg/dL',n:'Fósforo',cat:'Ferro e Vitaminas'},
+
+  // ── RENAL E HEPÁTICO ─────────────────────────────
+  // TGO (AST): H <40; M <32 U/L (AASLD); funcional <25
+  tgo:{l:0,okL:0,okH:25,h:40,u:'U/L',n:'TGO (AST)',cat:'Renal e Hepático'},
+  // TGP (ALT): H <56; M <45 U/L; funcional <25
+  tgp:{l:0,okL:0,okH:25,h:40,u:'U/L',n:'TGP (ALT)',cat:'Renal e Hepático'},
+  // GGT: F <36; M <61 U/L (varia por lab); funcional <20
+  ggt:{l:0,okL:0,okH:20,h:36,u:'U/L',n:'GGT',cat:'Renal e Hepático'},
+  // FA: 35-104 U/L (adultos)
+  fa:{l:0,okL:35,okH:104,h:130,u:'U/L',n:'Fosfatase Alcalina',cat:'Renal e Hepático'},
+  bilirrubina:{l:0,okL:0,okH:1.2,h:2.0,u:'mg/dL',n:'Bilirrubina Total',cat:'Renal e Hepático'},
+  // Creatinina: F 0.5-1.1; M 0.7-1.3 mg/dL
+  creatinina:{l:0,okL:0.5,okH:1.1,h:1.3,u:'mg/dL',n:'Creatinina',cat:'Renal e Hepático'},
+  // Ureia: 10-50 mg/dL
+  ureia:{l:0,okL:15,okH:45,h:50,u:'mg/dL',n:'Ureia',cat:'Renal e Hepático'},
+
+  // ── ELETRÓLITOS ──────────────────────────────────
+  sodio:{l:0,okL:136,okH:145,h:148,u:'mEq/L',n:'Sódio',cat:'Eletrólitos'},
+  potassio:{l:0,okL:3.5,okH:5.0,h:5.5,u:'mEq/L',n:'Potássio',cat:'Eletrólitos'},
+
+  // ── PROTEÍNAS ────────────────────────────────────
+  albumina:{l:0,okL:3.5,okH:5.0,h:5.5,u:'g/dL',n:'Albumina',cat:'Proteínas'},
+  proteinas_totais:{l:0,okL:6.0,okH:8.0,h:9.0,u:'g/dL',n:'Proteínas Totais',cat:'Proteínas'},
+
+  // ── ÓSSEO ────────────────────────────────────────
+  // PTH: 15-65 pg/mL (intacto); valores variam por laboratório
+  pth:{l:0,okL:15,okH:65,h:88,u:'pg/mL',n:'PTH (Paratormônio)',cat:'Ósseo'},
+  osteocalcina:{l:0,okL:11,okH:43,h:60,u:'ng/mL',n:'Osteocalcina',cat:'Ósseo'},
+};
+
+// ══ BASE DE CONDUTAS ══════════════════════════════
+const C={
+  glicemia:{h:['Reduzir carboidratos refinados e açúcares','Aumentar fibras solúveis (aveia, linhaça, psyllium)','Priorizar proteínas e gorduras boas em cada refeição','Considerar vinagre de maçã antes das refeições maiores'],l:['Aumentar frequência das refeições','Incluir carboidratos complexos','Evitar longos períodos em jejum']},
+  insulina:{h:['Dieta com baixo índice glicêmico','Aumentar proteínas e gorduras saudáveis','Reduzir e fracionar carboidratos','Magnésio, cromo e berberina como suporte']},
+  homa:{h:['Protocolo de resistência insulínica','Reduzir carboidratos refinados','Exercício físico combinado (força + aeróbico)','Ômega-3, magnésio e canela']},
+  hba1c:{h:['Controle glicêmico contínuo','Eliminar açúcares e farinhas refinadas','Aumentar fibras e proteínas a cada refeição']},
+  tsh:{h:['Investigar e excluir doença celíaca','Suplementar selênio (1-2 castanhas-do-pará/dia)','Avaliar vitamina D e zinco','Reduzir bociogênicos crus em excesso'],l:['Avaliar excesso de iodo','Encaminhar ao endocrinologista']},
+  t4l:{l:['Suporte nutricional à tireoide','Selênio, zinco e iodo adequados','Evitar dietas muito calóricas restritivas'],h:['Investigar hipertireoidismo com endocrinologista']},
+  t3l:{l:['Investigar conversão periférica','Avaliar cortisol e reservas de ferro','Adequar calorias totais da dieta']},
+  antitpo:{h:['Protocolo de Hashimoto: dieta anti-inflamatória','Excluir glúten por 3 meses e reavaliar','Selênio 200mcg/dia e vitamina D otimizada']},
+  vitd:{l:['Suplementação de D3 + K2 conforme avaliação','Exposição solar 20-30min/dia','Peixes gordurosos, ovos, cogumelos']},
+  ferritina:{l:['Aumentar ferro heme: carne vermelha, fígado','Combinar com vitamina C para absorção','Evitar chá e café junto às refeições com ferro'],h:['Ferritina alta pode indicar inflamação, investigar']},
+  b12:{l:['Aumentar proteína animal: carne, ovos, laticínios','Avaliar uso de metformina','Suplementar B12 na forma de metilcobalamina']},
+  pcr:{h:['Dieta anti-inflamatória (padrão mediterrâneo)','Ômega-3 prioritário: peixes, linhaça, chia','Eliminar ultra-processados','Curcumina, gengibre e alho como suporte']},
+  homocisteina:{h:['Aumentar B12, B6 e folato','Suplementar metilfolato e metilcobalamina','Aumentar vegetais folhosos verdes']},
+  hdl:{l:['Aumentar gorduras boas: azeite, abacate, oleaginosas','Exercício físico aeróbico regular','Reduzir carboidratos refinados']},
+  ldl:{h:['Aumentar fibras solúveis: aveia, maçã, leguminosas','Reduzir gorduras saturadas em excesso','Aumentar ômega-3']},
+  tg:{h:['Reduzir açúcares e álcool drasticamente','Reduzir carboidratos refinados','Aumentar ômega-3','Fracionar as refeições']},
+  hb:{l:['Investigar causa: ferro, B12 ou folato baixos','Aumentar alimentos ricos em ferro heme','Vitamina C junto com fontes de ferro']},
+  magnesio:{l:['Vegetais verdes escuros, sementes, oleaginosas','Reduzir açúcar e álcool','Suplementar magnésio glicinato ou malato']},
+  zinco:{l:['Carnes, frutos do mar, sementes de abóbora','Suplementar zinco quelado','Demolhar grãos antes de consumir']},
+  cortisol:{h:['Gestão do estresse: meditação e respiração','Ashwagandha e rhodiola como adaptógenos','Priorizar sono de qualidade 7-9h/noite'],l:['Investigar insuficiência adrenal com endocrinologista']},
+  tgo:{h:['Eliminar álcool completamente','Reduzir ultra-processados','Investigar medicamentos hepatotóxicos']},
+  tgp:{h:['Dieta hepática protetora','Eliminar álcool','Monitorar com hepatologista']},
+  ggt:{h:['Eliminar álcool','Dieta anti-inflamatória e protetora hepática']},
+  folato:{l:['Aumentar folhas verdes escuras: espinafre, rúcula, couve','Suplementar metilfolato','Atenção especial em mulheres em idade fértil']},
+  ferro:{l:['Aumentar ferro heme: carne, fígado, aves escuras','Vitamina C potencializa absorção','Evitar inibidores de absorção junto às refeições']},
+  selenio:{l:['Castanha-do-pará 1-2 unidades/dia','Selênio essencial para conversão tireoidiana e antioxidação']},
+  calcio:{l:['Aumentar laticínios, sardinha, brócolis, couve','Vitamina D para absorção adequada','Avaliar suplementação com médico']},
+};
+
+const ENC={
+  tsh:['Endocrinologista: avaliar função tireoidiana'],
+  t4l:['Endocrinologista: avaliar função tireoidiana'],
+  t3l:['Endocrinologista: investigar hipotireoidismo'],
+  antitpo:['Endocrinologista: investigar tireoidite de Hashimoto'],
+  antitg:['Endocrinologista: investigar doença autoimune tireoidiana'],
+  glicemia:['Endocrinologista: avaliar resistência insulínica ou pré-diabetes'],
+  homa:['Endocrinologista: investigar síndrome metabólica'],
+  hba1c:['Endocrinologista: avaliar controle glicêmico'],
+  col_total:['Cardiologista: avaliar risco cardiovascular'],
+  ldl:['Cardiologista: avaliar necessidade de intervenção'],
+  tg:['Cardiologista: avaliar síndrome metabólica'],
+  pcr:['Clínico Geral: investigar foco inflamatório crônico'],
+  homocisteina:['Clínico Geral ou Cardiologista: risco cardiovascular aumentado'],
+  tgo:['Hepatologista: avaliar função hepática'],
+  tgp:['Hepatologista: avaliar função hepática'],
+  ggt:['Hepatologista: investigar causa da elevação'],
+  hb:['Hematologista: investigar e tratar anemia'],
+  prolactina:['Ginecologista ou Endocrinologista: investigar hiperprolactinemia'],
+  cortisol:['Endocrinologista: avaliar função adrenal'],
+  creatinina:['Nefrologista: avaliar função renal'],
+  pth:['Endocrinologista: avaliar metabolismo ósseo e paratireoide'],
+};
+
+const M={
+  metabolico:{c:40,p:30,g:30,txt:'Distribuição low-glycemic: redução de carboidratos refinados, aumento de proteína para controle glicêmico, gorduras boas para sensibilidade insulínica.'},
+  tireoidiano:{c:45,p:25,g:30,txt:'Suporte tireoidiano: calorias adequadas (déficit severo reduz T3), proteínas para conversão hormonal, gorduras essenciais para síntese hormonal.'},
+  inflamatorio:{c:40,p:30,g:30,txt:'Padrão anti-inflamatório: redução de carboidratos refinados, ômega-3 como prioridade, proteínas de qualidade para reparo tecidual.'},
+  lipideos:{c:40,p:25,g:35,txt:'Foco cardiovascular: gorduras boas como prioridade, fibras para reduzir LDL, redução de açúcares para controle de triglicerídeos.'},
+  geral:{c:50,p:25,g:25,txt:'Distribuição equilibrada com base em alimentos reais, proteínas de qualidade e carboidratos complexos prioritariamente.'},
+};
+
+// ══ BUSCA ════════════════════════════════════════
+const addedExams = {}; // {id: value}
+
+function doSearch(){
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  const res = document.getElementById('searchResults');
+  if(!q){res.classList.remove('show');return;}
+
+  const matches = Object.entries(R).filter(([id,r])=>
+    !addedExams.hasOwnProperty(id) &&
+    (r.n.toLowerCase().includes(q) || r.cat.toLowerCase().includes(q) || id.includes(q))
+  ).slice(0,8);
+
+  if(!matches.length){
+    res.innerHTML='<div class="sr-empty">Nenhum exame encontrado</div>';
+  } else {
+    res.innerHTML = matches.map(([id,r])=>`
+      <div class="sr-item" onclick="addExam('${id}')">
+        <div><div class="sr-name">${r.n}</div><div class="sr-ref">${r.cat} · Func: ${r.okL===0?'<'+r.okH:r.okL+'–'+r.okH} ${r.u}</div></div>
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v12M1 7h12"/></svg>
+      </div>`).join('');
+  }
+  res.classList.add('show');
+}
+
+function addExam(id){
+  if(addedExams.hasOwnProperty(id)) return;
+  addedExams[id] = '';
+
+  const empty = document.getElementById('emptyState');
+  if(empty) empty.remove();
+
+  const list = document.getElementById('addedList');
+  const r = R[id];
+  const div = document.createElement('div');
+  div.className = 'added-item';
+  div.id = 'ai-'+id;
+  div.innerHTML = `
+    <div style="flex:1;min-width:0">
+      <div class="ai-name">${r.n}</div>
+      <span class="ai-ref">${r.cat} · Ref. funcional: ${r.okL===0?'< '+r.okH:r.okL+' – '+r.okH} ${r.u}</span>
+    </div>
+    <div class="ai-input-wrap">
+      <input class="ai-input" type="number" id="val-${id}" placeholder="${r.u||'valor'}"
+        oninput="cvAdded(this,'${id}')" step="any">
+      <div class="ai-dot" id="dot-${id}"></div>
+    </div>
+    <button class="ai-remove" onclick="removeExam('${id}')" title="Remover">✕</button>`;
+  list.appendChild(div);
+
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchResults').classList.remove('show');
+  setTimeout(()=>document.getElementById('val-'+id)?.focus(), 50);
+}
+
+function removeExam(id){
+  delete addedExams[id];
+  document.getElementById('ai-'+id)?.remove();
+  if(!document.querySelector('.added-item')){
+    const list = document.getElementById('addedList');
+    list.innerHTML = '<div class="empty-state" id="emptyState">🔍 Busque um exame acima para começar a adicionar os valores</div>';
+  }
+}
+
+function cvAdded(el, id){
+  const v = parseFloat(el.value);
+  const dot = document.getElementById('dot-'+id);
+  el.className='ai-input';
+  if(dot) dot.className='ai-dot';
+  if(!el.value||isNaN(v)) return;
+  addedExams[id] = v;
+  const st = getSt(id,v);
+  el.classList.add(st);
+  if(dot) dot.className='ai-dot '+st;
+}
+
+// Fechar busca ao clicar fora
+document.addEventListener('click', e=>{
+  if(!e.target.closest('.search-wrap'))
+    document.getElementById('searchResults').classList.remove('show');
+});
+
+// ══ STATUS ════════════════════════════════════════
+function getSt(id,val){
+  const r=R[id];if(!r)return'ok';
+  if(val<r.okL)return val<r.l?'alert':'low';
+  if(val>r.okH)return val>r.h?'alert':'borderline';
+  return'ok';
+}
+
+function collectExams(){
+  const out={};
+  Object.keys(addedExams).forEach(id=>{
+    const el=document.getElementById('val-'+id);
+    if(el&&el.value){
+      const v=parseFloat(el.value);
+      if(!isNaN(v))out[id]={value:v,status:getSt(id,v),...R[id]};
+    }
+  });
+  return out;
+}
+
+function setHipotese(btn, texto){
+  document.querySelectorAll('.hchip').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('pac-hipotese').value = texto;
+}
+
+// ══ ANALISAR ══════════════════════════════════════
+function analisar(){
+  const exams=collectExams();
+  if(!Object.keys(exams).length){alert('Adicione e preencha pelo menos um exame.');return;}
+  const pac={
+    nome:   document.getElementById('pac-nome').value||'Paciente',
+    nasc:   document.getElementById('pac-nasc').value,
+    sexo:   document.getElementById('pac-sexo').value,
+    peso:   document.getElementById('pac-peso').value,
+    altura: document.getElementById('pac-altura').value,
+    data:   document.getElementById('pac-data').value,
+    queixa: document.getElementById('pac-queixa').value,
+    condicao: document.getElementById('pac-condicao').value,
+    hipotese: document.getElementById('pac-hipotese').value,
+    nutri:  document.getElementById('pac-nutri').value,
+    crn:    document.getElementById('pac-crn').value,
+  };
+  const alt=Object.entries(exams).filter(([,v])=>v.status!=='ok');
+
+  // idade
+  let idade='';
+  if(pac.nasc){const d=new Date();const b=new Date(pac.nasc);let a=d.getFullYear()-b.getFullYear();if(d.setFullYear(1970)<new Date(1970,b.getMonth(),b.getDate()))a--;idade=a+' anos';}
+
+  // HEADER
+  document.getElementById('rn').textContent=pac.nome;
+  let meta=[pac.sexo,idade,pac.queixa].filter(Boolean).join(' · ');
+  if(pac.peso&&pac.altura){const h=parseFloat(pac.altura)/100;meta+=` · IMC ${(parseFloat(pac.peso)/(h*h)).toFixed(1)}`;}
+  document.getElementById('rm').textContent=meta;
+
+  // MARCADORES
+  const stL={ok:'✓ Adequado',alert:'⚠ Alterado',borderline:'→ Limítrofe',low:'↓ Abaixo'};
+  document.getElementById('markers').innerHTML=Object.entries(exams).map(([id,v])=>`
+    <div class="mc ${v.status}">
+      <div class="mc-name">${v.n}</div>
+      <div class="mc-val">${v.value}<span> ${v.u}</span></div>
+      <div class="mc-st">${stL[v.status]||v.status}</div>
+    </div>`).join('');
+
+  document.getElementById('r-interp').innerHTML=gerarInterp(exams,alt);
+  document.getElementById('r-conduta').innerHTML=gerarConduta(alt);
+
+  const mac=gerarMacros(exams);
+  document.getElementById('mbar').innerHTML=`<div class="mc-c" style="width:${mac.c}%"></div><div class="mc-p" style="width:${mac.p}%"></div><div class="mc-g" style="width:${mac.g}%"></div>`;
+  document.getElementById('mleg').innerHTML=`<div class="ml-item"><div class="ml-dot" style="background:#9d8768"></div>Carboidratos ${mac.c}%</div><div class="ml-item"><div class="ml-dot" style="background:#2a6e47"></div>Proteínas ${mac.p}%</div><div class="ml-item"><div class="ml-dot" style="background:#b8860b"></div>Gorduras ${mac.g}%</div>`;
+  document.getElementById('r-macro-txt').textContent=mac.txt;
+  document.getElementById('r-enc').innerHTML=gerarEnc(alt);
+  document.getElementById('r-refs').innerHTML=gerarRefs(exams);
+
+  // PRONTUÁRIO
+  document.getElementById('prontuarioBody').innerHTML=gerarProntuario(pac,exams,alt,mac,idade);
+
+  // reset cardápio
+  document.getElementById('cardapio-wrap').style.display='block';
+  document.getElementById('cardapio-grid').style.display='none';
+  document.getElementById('cardapio-grid').innerHTML='';
+  const btn=document.getElementById('btnCard');btn.disabled=false;btn.textContent='🍽️ Gerar cardápio personalizado';
+
+  document.getElementById('formSection').style.display='none';
+  document.getElementById('result').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+  window._ctx={pac,exams,alt,mac,idade};
+}
+
+// ══ INTERPRETAÇÃO ══════════════════════════════
+function gerarInterp(exams,alt){
+  if(!alt.length)return'<p>Todos os marcadores estão dentro da referência funcional. Continue monitorando e mantendo os bons hábitos.</p>';
+  const g={metab:[],tir:[],infl:[],lip:[],anem:[],vit:[],ren:[]};
+  alt.forEach(([id])=>{
+    if(['glicemia','insulina','homa','hba1c','acido_urico'].includes(id))g.metab.push(id);
+    if(['tsh','t4l','t3l','t3r','antitpo','antitg'].includes(id))g.tir.push(id);
+    if(['pcr','vhs','homocisteina'].includes(id))g.infl.push(id);
+    if(['col_total','hdl','ldl','tg','vldl'].includes(id))g.lip.push(id);
+    if(['hb','ht','vcm','hcm','ferro','ferritina','b12','folato'].includes(id))g.anem.push(id);
+    if(['vitd','zinco','magnesio','selenio','calcio'].includes(id))g.vit.push(id);
+    if(['tgo','tgp','ggt','creatinina','ureia','fa'].includes(id))g.ren.push(id);
+  });
+  let t='';
+  if(g.metab.length){const res=exams.homa?.status!=='ok'||exams.insulina?.status!=='ok';t+=`<p><strong>Perfil metabólico:</strong> ${res?'Padrão sugestivo de resistência insulínica. ':''}Marcadores alterados: ${g.metab.map(id=>R[id].n).join(', ')}.</p>`;}
+  if(g.tir.length){const auto=exams.antitpo?.status!=='ok'||exams.antitg?.status!=='ok';t+=`<p><strong>Perfil tireoidiano:</strong> ${auto?'Presença de anticorpos: investigar tireoidite autoimune (Hashimoto). ':''}Marcadores: ${g.tir.map(id=>R[id].n).join(', ')}.</p>`;}
+  if(g.infl.length)t+=`<p><strong>Processo inflamatório:</strong> Inflamação crônica de baixo grau (${g.infl.map(id=>R[id].n).join(', ')}). Dieta anti-inflamatória é prioritária.</p>`;
+  if(g.lip.length)t+=`<p><strong>Perfil lipídico:</strong> Alterações em ${g.lip.map(id=>R[id].n).join(', ')}. Atenção ao risco cardiovascular.</p>`;
+  if(g.anem.length)t+=`<p><strong>Perfil hematológico:</strong> Possível anemia ou depleção de nutrientes hematopoiéticos (${g.anem.map(id=>R[id].n).join(', ')}).</p>`;
+  if(g.vit.length)t+=`<p><strong>Micronutrientes:</strong> Deficiência em ${g.vit.map(id=>R[id].n).join(', ')}. Essenciais para energia, imunidade e função hormonal.</p>`;
+  if(g.ren.length)t+=`<p><strong>Função hepática/renal:</strong> Alterações em ${g.ren.map(id=>R[id].n).join(', ')}. Ajuste dietético e acompanhamento médico recomendados.</p>`;
+  return t||`<p>${alt.length} marcador${alt.length>1?'es':''} fora da referência funcional.</p>`;
+}
+
+function gerarConduta(alt){
+  const prs=new Set(),nut=new Set(),av=new Set();
+  alt.forEach(([id,v])=>{
+    const c=C[id];if(!c)return;
+    const s=v.value<(R[id]?.okL||0)?'l':'h';
+    const items=c[s]||c.h||[];
+    items.forEach((item,i)=>{
+      if(i===0)prs.add(item);
+      else if(/reduz|evit|elimin/i.test(item))av.add(item);
+      else nut.add(item);
+    });
+  });
+  if(!prs.size)prs.add('Manter alimentação baseada em alimentos reais e minimamente processados');
+  if(!nut.size)nut.add('Priorizar proteínas de qualidade, gorduras boas e carboidratos complexos');
+  const row=(ico,cls,lbl,set)=>[...set].slice(0,5).map(i=>`<div class="ci ${cls}"><span class="ci-icon">${ico}</span><div class="ci-text"><strong>${lbl}</strong>${i}</div></div>`).join('');
+  return row('🎯','prior','Prioridade',prs)+row('🥦','nutr','Nutrição',nut)+row('⚠️','avoid','Reduzir',av);
+}
+
+function gerarMacros(exams){
+  // Pontuação por padrão clínico
+  let scores = {metabolico:0, tireoidiano:0, inflamatorio:0, lipideos:0, anemia:0, renal:0};
+
+  // Resistência insulínica / metabólico
+  if(exams.glicemia?.status!=='ok') scores.metabolico += exams.glicemia?.status==='alert'?3:1;
+  if(exams.insulina?.status!=='ok')  scores.metabolico += exams.insulina?.status==='alert'?3:2;
+  if(exams.homa?.status!=='ok')      scores.metabolico += exams.homa?.status==='alert'?4:2;
+  if(exams.hba1c?.status!=='ok')     scores.metabolico += exams.hba1c?.status==='alert'?3:1;
+  if(exams.tg?.status!=='ok')        scores.metabolico += 1; scores.lipideos += 1;
+  if(exams.acido_urico?.status!=='ok') scores.metabolico += 1;
+
+  // Tireoidiano
+  if(exams.tsh?.status!=='ok')    scores.tireoidiano += exams.tsh?.status==='alert'?3:2;
+  if(exams.t4l?.status!=='ok')    scores.tireoidiano += 2;
+  if(exams.t3l?.status!=='ok')    scores.tireoidiano += 2;
+  if(exams.antitpo?.status!=='ok') scores.tireoidiano += 3;
+  if(exams.antitg?.status!=='ok')  scores.tireoidiano += 2;
+
+  // Inflamatório
+  if(exams.pcr?.status!=='ok')         scores.inflamatorio += exams.pcr?.status==='alert'?4:2;
+  if(exams.vhs?.status!=='ok')         scores.inflamatorio += 2;
+  if(exams.homocisteina?.status!=='ok') scores.inflamatorio += 3;
+
+  // Lipídios / cardiovascular
+  if(exams.col_total?.status!=='ok') scores.lipideos += 2;
+  if(exams.ldl?.status!=='ok')       scores.lipideos += exams.ldl?.status==='alert'?3:2;
+  if(exams.hdl?.status!=='ok')       scores.lipideos += 2;
+  if(exams.vldl?.status!=='ok')      scores.lipideos += 1;
+
+  // Anemia / carência
+  if(exams.hb?.status!=='ok')       scores.anemia += 3;
+  if(exams.ferritina?.status!=='ok') scores.anemia += 2;
+  if(exams.ferro?.status!=='ok')     scores.anemia += 2;
+  if(exams.b12?.status!=='ok')       scores.anemia += 2;
+  if(exams.folato?.status!=='ok')    scores.anemia += 1;
+
+  // Renal/hepático
+  if(exams.creatinina?.status!=='ok') scores.renal += 3;
+  if(exams.ureia?.status!=='ok')      scores.renal += 2;
+  if(exams.tgo?.status!=='ok')        scores.renal += 2;
+  if(exams.tgp?.status!=='ok')        scores.renal += 2;
+
+  // Determinar padrão dominante
+  const dominante = Object.entries(scores).sort((a,b)=>b[1]-a[1])[0];
+  const segundo   = Object.entries(scores).sort((a,b)=>b[1]-a[1])[1];
+  const semAlteracao = dominante[1] === 0;
+
+  // Nenhuma alteração
+  if(semAlteracao) return {c:50,p:25,g:25,
+    txt:'Distribuição equilibrada recomendada para manutenção da saúde, com base em alimentos reais e minimamente processados.'};
+
+  // Metabólico dominante
+  if(dominante[0]==='metabolico' && dominante[1]>=3){
+    const grave = dominante[1] >= 7;
+    return grave
+      ? {c:30,p:35,g:35, txt:'Padrão low-carb funcional: resistência insulínica significativa. Redução expressiva de carboidratos, aumento de proteínas para saciedade e gorduras boas para sensibilidade à insulina. Evitar completamente açúcares e farinhas refinadas.'}
+      : {c:40,p:30,g:30, txt:'Distribuição low-glycemic: carboidratos reduzidos e de baixo índice glicêmico, proteínas aumentadas para controle glicêmico e saciedade, gorduras boas para sensibilidade insulínica.'};
+  }
+
+  // Tireoidiano dominante
+  if(dominante[0]==='tireoidiano' && dominante[1]>=2){
+    // Hipotireoidismo: não restringir demais as calorias (reduz T3)
+    return {c:45,p:25,g:30,
+      txt:'Suporte tireoidiano: calorias adequadas são essenciais (déficit calórico severo reduz T3). Proteínas para conversão hormonal periférica. Gorduras essenciais para síntese de hormônios tireoidianos. Evitar dietas muito restritivas.'};
+  }
+
+  // Inflamatório dominante
+  if(dominante[0]==='inflamatorio' && dominante[1]>=3){
+    return {c:38,p:32,g:30,
+      txt:'Padrão anti-inflamatório intensivo: carboidratos reduzidos e provenientes de vegetais e grãos integrais. Proteínas de qualidade para reparo tecidual. Gorduras com prioridade absoluta para ômega-3 (peixes, linhaça, chia). Eliminar ultra-processados.'};
+  }
+
+  // Lipídios dominante
+  if(dominante[0]==='lipideos' && dominante[1]>=2){
+    // HDL baixo = mais gordura boa; TG alto = menos carb
+    const tgAlto = exams.tg?.status!=='ok';
+    const hdlBaixo = exams.hdl?.status!=='ok';
+    if(tgAlto) return {c:35,p:28,g:37,
+      txt:'Foco em triglicerídeos elevados: redução significativa de carboidratos (principal causa de TG alto), especialmente açúcares e álcool. Gorduras boas como prioridade: azeite, abacate, oleaginosas. Proteínas moderadas.'};
+    if(hdlBaixo) return {c:42,p:25,g:33,
+      txt:'Foco em HDL baixo: aumento de gorduras boas (azeite, abacate, oleaginosas) para elevar HDL. Redução de carboidratos refinados. Exercício físico é fundamental para elevar HDL.'};
+    return {c:40,p:25,g:35,
+      txt:'Foco cardiovascular: gorduras boas como prioridade. Fibras solúveis (aveia, maçã, leguminosas) para redução de LDL. Redução de carboidratos refinados e gorduras saturadas em excesso.'};
+  }
+
+  // Anemia dominante
+  if(dominante[0]==='anemia' && dominante[1]>=2){
+    return {c:50,p:30,g:20,
+      txt:'Suporte hematológico: proteínas aumentadas para síntese de hemoglobina e reposição de estoques. Carboidratos adequados para energia. Gorduras reduzidas para não interferir na absorção de ferro. Priorizar alimentos fontes de ferro heme com vitamina C.'};
+  }
+
+  // Renal/hepático dominante
+  if(dominante[0]==='renal' && dominante[1]>=2){
+    return {c:55,p:15,g:30,
+      txt:'Adaptação para função renal/hepática comprometida: proteínas controladas para não sobrecarregar rins ou fígado (ajustar conforme gravidade com médico). Carboidratos como principal fonte energética. Gorduras boas moderadas. Controle de sódio e potássio.'};
+  }
+
+  // Padrão misto: dois padrões relevantes
+  if(segundo[1] >= 2 && dominante[1] <= 4){
+    return {c:42,p:28,g:30,
+      txt:`Padrão misto (${dominante[0]} + ${segundo[0]}): distribuição balanceada anti-inflamatória com redução de carboidratos refinados, proteínas de qualidade e gorduras boas. Ajustar conforme resposta clínica individual.`};
+  }
+
+  // Fallback com leve ajuste
+  return {c:45,p:28,g:27,
+    txt:'Distribuição levemente ajustada com base nos marcadores identificados. Priorizar alimentos reais, proteínas de qualidade e gorduras boas. Reduzir carboidratos refinados e ultra-processados.'};
+}
+
+function gerarEnc(alt){
+  const icons={'Endocrinologista':'🩺','Cardiologista':'❤️','Gastroenterologista':'🫀','Ginecologista':'👩‍⚕️','Hematologista':'🩸','Hepatologista':'🫁','Clínico Geral':'👨‍⚕️','Nefrologista':'🫘'};
+  const added=new Set(),html=[];
+  alt.forEach(([id,v])=>{
+    if(v.status==='ok')return;
+    (ENC[id]||[]).forEach(enc=>{
+      if(!added.has(enc)){
+        added.add(enc);
+        const esp=enc.split(':')[0].trim();
+        const mot=enc.split(':')[1]?.trim()||enc;
+        const icon=Object.entries(icons).find(([k])=>esp.includes(k))?.[1]||'👨‍⚕️';
+        html.push(`<div class="enc-item"><div class="enc-ico">${icon}</div><div class="enc-txt"><strong>${esp}:</strong> ${mot}</div></div>`);
+      }
+    });
+  });
+  if(!html.length)html.push('<div class="enc-item"><div class="enc-ico">✅</div><div class="enc-txt"><strong>Nenhum encaminhamento necessário</strong>Todos os parâmetros funcionais adequados.</div></div>');
+  return html.join('');
+}
+
+// ══ REFERÊNCIAS BIBLIOGRÁFICAS ════════════════════
+function gerarRefs(exams){
+  const refs = new Map();
+
+  // Base fixa sempre incluída
+  refs.set('cfn667', 'Conselho Federal de Nutricionistas. Resolução CFN nº 667/2020 — Dispõe sobre o prontuário do atendimento nutricional. Brasília: CFN, 2020.');
+  refs.set('dris', 'Institute of Medicine. Dietary Reference Intakes (DRIs): Recommended Dietary Allowances and Adequate Intakes. Washington: National Academies Press, 2011. Disponível em: nap.nationalacademies.org');
+
+  // Referências por marcador presente
+  if(exams.vitd||exams.calcio||exams.pth){
+    refs.set('vitd', 'Holick MF, et al. Evaluation, Treatment, and Prevention of Vitamin D Deficiency: An Endocrine Society Clinical Practice Guideline. J Clin Endocrinol Metab. 2011;96(7):1911–30. doi:10.1210/jc.2011-0385');
+    refs.set('vitd2', 'Amrein K, et al. Vitamin D deficiency 2.0: an update on the current status worldwide. Eur J Clin Nutr. 2020;74:1498–1513. doi:10.1038/s41430-020-0558-y');
+  }
+  if(exams.tsh||exams.t4l||exams.t3l||exams.antitpo){
+    refs.set('tir', 'Chaker L, et al. Hypothyroidism. Lancet. 2017;390(10101):1550–1562. doi:10.1016/S0140-6736(17)30703-1');
+    refs.set('tir2', 'Farebrother J, et al. Excess iodine intake: sources, assessment, and effects on thyroid function. Ann N Y Acad Sci. 2019;1446(1):44–65. doi:10.1111/nyas.14041');
+    refs.set('sel', 'Ventura M, et al. Selenium and Thyroid Disease: From Pathophysiology to Treatment. Int J Endocrinol. 2017;2017:1297658. doi:10.1155/2017/1297658');
+  }
+  if(exams.glicemia||exams.insulina||exams.homa||exams.hba1c){
+    refs.set('dm', 'American Diabetes Association. Standards of Medical Care in Diabetes — 2024. Diabetes Care. 2024;47(Suppl 1):S1–S321. doi:10.2337/dc24-Sint');
+    refs.set('ir', 'Reaven GM. Insulin resistance: the link between obesity and cardiovascular disease. Med Clin North Am. 2011;95(5):875–92. doi:10.1016/j.mcna.2011.06.002');
+    refs.set('lc', 'Evert AB, et al. Nutrition Therapy for Adults With Diabetes or Prediabetes: A Consensus Report. Diabetes Care. 2019;42(5):731–754. doi:10.2337/dci19-0014');
+  }
+  if(exams.hb||exams.ferritina||exams.ferro||exams.vcm){
+    refs.set('anemia', 'WHO. Haemoglobin concentrations for the diagnosis of anaemia and assessment of severity. Geneva: World Health Organization, 2011. WHO/NMH/NHD/MNM/11.1');
+    refs.set('ferro', 'Camaschella C. Iron-deficiency anemia. N Engl J Med. 2015;372(19):1832–43. doi:10.1056/NEJMra1401038');
+    refs.set('ferabs', 'Lynch SR, Cook JD. Interaction of vitamin C and iron. Ann N Y Acad Sci. 1980;355:32–44. doi:10.1111/j.1749-6632.1980.tb21325.x');
+  }
+  if(exams.b12||exams.folato){
+    refs.set('b12', 'Green R, et al. Vitamin B12 deficiency. Nat Rev Dis Primers. 2017;3:17040. doi:10.1038/nrdp.2017.40');
+    refs.set('folato', 'Crider KS, et al. Folate and DNA methylation: a review of molecular mechanisms and the evidence for folate\'s role. Adv Nutr. 2012;3(1):21–38. doi:10.3945/an.111.000992');
+  }
+  if(exams.pcr||exams.vhs||exams.homocisteina){
+    refs.set('infl', 'Calder PC, et al. Dietary factors and low-grade inflammation in relation to overweight and obesity. Br J Nutr. 2011;106(S3):S5–S78. doi:10.1017/S0007114511005460');
+    refs.set('hcy', 'Ganguly P, Alam SF. Role of homocysteine in the development of cardiovascular disease. Nutr J. 2015;14:6. doi:10.1186/1475-2891-14-6');
+    refs.set('omega', 'Calder PC. Omega-3 fatty acids and inflammatory processes: from molecules to man. Biochem Soc Trans. 2017;45(5):1105–1115. doi:10.1042/BST20160474');
+  }
+  if(exams.ldl||exams.tg||exams.col_total||exams.hdl){
+    refs.set('lip', 'Mach F, et al. 2019 ESC/EAS Guidelines for the management of dyslipidaemias. Eur Heart J. 2020;41(1):111–188. doi:10.1093/eurheartj/ehz455');
+    refs.set('fibras', 'Brown L, et al. Cholesterol-lowering effects of dietary fiber: a meta-analysis. Am J Clin Nutr. 1999;69(1):30–42. doi:10.1093/ajcn/69.1.30');
+  }
+  if(exams.magnesio){
+    refs.set('mg', 'Rosanoff A, et al. Suboptimal magnesium status in the United States: are the health consequences underestimated? Nutr Rev. 2012;70(3):153–64. doi:10.1111/j.1753-4887.2011.00465.x');
+  }
+  if(exams.zinco){
+    refs.set('zn', 'Wessells KR, Brown KH. Estimating the global prevalence of zinc deficiency: results based on zinc availability in national food supplies. PLoS One. 2012;7(11):e50568. doi:10.1371/journal.pone.0050568');
+  }
+  if(exams.tgo||exams.tgp||exams.ggt){
+    refs.set('hepa', 'Chalasani N, et al. The diagnosis and management of nonalcoholic fatty liver disease: Practice guidance from the American Association for the Study of Liver Diseases. Hepatology. 2018;67(1):328–357. doi:10.1002/hep.29367');
+  }
+  if(exams.creatinina||exams.ureia){
+    refs.set('renal', 'Kalantar-Zadeh K, et al. Dietary restrictions in dialysis patients: is there anything left to eat? Semin Dial. 2015;28(2):159–68. doi:10.1111/sdi.12348');
+  }
+
+  // Referências funcionais
+  refs.set('func', 'Bland JS. Functional Medicine: An Operating System for Integrative Medicine. Integr Med (Encinitas). 2015;14(5):18–20. PMID: 26770109');
+  refs.set('func2', 'Jones DS, et al. Textbook of Functional Medicine. Institute for Functional Medicine. 2010. ISBN: 978-0977371723');
+
+  return [...refs.values()].map((r,i)=>`<div class="ref-item">${r}</div>`).join('');
+}
+
+// ══ PRONTUÁRIO CFN/CRN ════════════════════════════
+function gerarProntuario(pac,exams,alt,mac,idade){
+  const hoje = pac.data ? new Date(pac.data+'T12:00:00').toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+  const imc = pac.peso&&pac.altura ? (parseFloat(pac.peso)/((parseFloat(pac.altura)/100)**2)).toFixed(1) : 'Não informado';
+  const altImc = pac.peso&&pac.altura ? classificarIMC(parseFloat(imc)) : '';
+
+  const examesTexto = Object.entries(exams).map(([id,v])=>{
+    const stLabel={ok:'Adequado',alert:'Alterado',borderline:'Limítrofe',low:'Abaixo do referencial'};
+    return `  • ${v.n}: ${v.value} ${v.u} → ${stLabel[v.status]||v.status} (Ref. funcional: ${v.okL===0?'< '+v.okH:v.okL+' – '+v.okH} ${v.u})`;
+  }).join('\n');
+
+  const altTexto = alt.length>0
+    ? alt.map(([id,v])=>`  • ${v.n}: ${v.value} ${v.u}`).join('\n')
+    : '  Nenhum marcador fora da referência funcional';
+
+  const condutas=[];
+  alt.forEach(([id,v])=>{
+    const c=C[id];if(!c)return;
+    const s=v.value<(R[id]?.okL||0)?'l':'h';
+    const items=c[s]||c.h||[];
+    items.forEach(i=>condutas.push(i));
+  });
+  if(!condutas.length)condutas.push('Manter alimentação baseada em alimentos reais e minimamente processados');
+
+  const encTexto = (() => {
+    const added=new Set(),list=[];
+    alt.forEach(([id,v])=>{
+      (ENC[id]||[]).forEach(enc=>{if(!added.has(enc)){added.add(enc);list.push('  • '+enc);}});
+    });
+    return list.length ? list.join('\n') : '  Não há indicação de encaminhamento no momento';
+  })();
+
+  const sections = [
+    {t:'IDENTIFICAÇÃO', c:[
+      `Nome: ${pac.nome}`,
+      idade ? `Idade: ${idade}` : '',
+      `Sexo: ${pac.sexo.charAt(0).toUpperCase()+pac.sexo.slice(1)}`,
+      pac.nasc ? `Data de nascimento: ${new Date(pac.nasc+'T12:00:00').toLocaleDateString('pt-BR')}` : '',
+      `Data do atendimento: ${hoje}`,
+    ].filter(Boolean).join('\n')},
+    {t:'DADOS ANTROPOMÉTRICOS', c:[
+      pac.peso ? `Peso: ${pac.peso} kg` : '',
+      pac.altura ? `Estatura: ${pac.altura} cm` : '',
+      pac.peso&&pac.altura ? `IMC: ${imc} kg/m²: ${altImc}` : '',
+    ].filter(Boolean).join('\n') || 'Não informado'},
+    {t:'QUEIXA PRINCIPAL E ANAMNESE', c:[
+      pac.queixa ? `Queixa principal: ${pac.queixa}` : 'Não informada',
+      pac.condicao ? `Diagnóstico/condição associada: ${pac.condicao}` : '',
+    ].filter(Boolean).join('\n')},
+    {t:'AVALIAÇÃO BIOQUÍMICA: EXAMES LABORATORIAIS', c: examesTexto || 'Nenhum exame informado'},
+    {t:'MARCADORES FORA DO REFERENCIAL FUNCIONAL', c: altTexto},
+    {t:'HIPÓTESE DIAGNÓSTICA NUTRICIONAL', c: pac.hipotese || gerarHipotese(alt)},
+    {t:'OBJETIVOS NUTRICIONAIS', c: gerarObjetivos(alt).map(o=>'  • '+o).join('\n')},
+    {t:'CONDUTA DIETOTERÁPICA', c:[
+      `Distribuição de macronutrientes:\n  Carboidratos: ${mac.c}% | Proteínas: ${mac.p}% | Lipídios: ${mac.g}%`,
+      '',
+      'Orientações nutricionais:',
+      condutas.slice(0,8).map(c=>'  • '+c).join('\n'),
+    ].join('\n')},
+    {t:'ENCAMINHAMENTOS', c: encTexto},
+    {t:'RETORNO E REAVALIAÇÃO', c: [
+      'Retorno previsto: 30 a 60 dias',
+      'Solicitar reavaliação de exames bioquímicos conforme necessidade clínica',
+      'Monitorar adesão à conduta dietoterápica e resposta clínica',
+    ].join('\n')},
+    {t:'ASSINATURA', c:[
+      `Nutricionista: ${pac.nutri || 'Nutricionista responsável'}`,
+      pac.crn ? pac.crn : '',
+      `Data: ${hoje}`,
+      '',
+      '⚠ Esta análise foi gerada como ferramenta de apoio à conduta nutricional.',
+      'A responsabilidade técnica é inteiramente da nutricionista responsável.',
+      'Resolução CFN nº 667/2020, Prontuário do Atendimento Nutricional.',
+    ].filter(Boolean).join('\n')},
+  ];
+
+  return sections.map(s=>`
+    <div class="p-section">
+      <div class="p-title">${s.t}</div>
+      <div class="p-content">${s.c.replace(/\n/g,'<br>')}</div>
+    </div>`).join('');
+}
+
+function classificarIMC(imc){
+  if(imc<18.5)return'Baixo peso';
+  if(imc<25)return'Eutrofia';
+  if(imc<30)return'Sobrepeso';
+  if(imc<35)return'Obesidade grau I';
+  if(imc<40)return'Obesidade grau II';
+  return'Obesidade grau III';
+}
+
+function gerarHipotese(alt){
+  if(!alt.length)return'Paciente sem alterações bioquímicas evidentes nos marcadores avaliados.';
+  const partes=[];
+  if(alt.some(([id])=>['glicemia','insulina','homa'].includes(id)))partes.push('possível resistência insulínica');
+  if(alt.some(([id])=>['tsh','t4l','antitpo'].includes(id)))partes.push('disfunção tireoidiana');
+  if(alt.some(([id])=>['hb','ferritina','ferro'].includes(id)))partes.push('anemia ou depleção de ferro');
+  if(alt.some(([id])=>['vitd'].includes(id)))partes.push('deficiência de vitamina D');
+  if(alt.some(([id])=>['pcr','vhs'].includes(id)))partes.push('processo inflamatório crônico de baixo grau');
+  if(alt.some(([id])=>['ldl','tg'].includes(id)))partes.push('dislipidemia');
+  if(!partes.length)partes.push('alterações bioquímicas identificadas, requerendo intervenção nutricional');
+  return'Paciente apresenta ' + partes.join(', ') + '.';
+}
+
+function gerarObjetivos(alt){
+  const objs=new Set(['Promover alimentação adequada e saudável conforme preceitos da Nutrição Funcional']);
+  if(alt.some(([id])=>['glicemia','insulina','homa','hba1c'].includes(id)))objs.add('Melhorar controle glicêmico e sensibilidade à insulina');
+  if(alt.some(([id])=>['tsh','t4l','antitpo'].includes(id)))objs.add('Suporte nutricional à função tireoidiana');
+  if(alt.some(([id])=>['pcr','vhs','homocisteina'].includes(id)))objs.add('Reduzir processo inflamatório sistêmico');
+  if(alt.some(([id])=>['hb','ferritina','ferro','b12'].includes(id)))objs.add('Repor nutrientes deficientes e tratar anemia nutricional');
+  if(alt.some(([id])=>['vitd','zinco','magnesio'].includes(id)))objs.add('Corrigir deficiências de micronutrientes');
+  if(alt.some(([id])=>['ldl','tg','col_total'].includes(id)))objs.add('Melhora do perfil lipídico e redução do risco cardiovascular');
+  objs.add('Educação nutricional e manutenção de hábitos saudáveis a longo prazo');
+  return [...objs];
+}
+
+// ══ COPIAR PRONTUÁRIO ═════════════════════════════
+function copyProntuario(){
+  const body = document.getElementById('prontuarioBody');
+  // Extrair texto limpo do HTML
+  const texto = body.innerText || body.textContent;
+
+  const btn = document.getElementById('btnCopyPront');
+  const fallback = ()=>{
+    const ta=document.createElement('textarea');
+    ta.value=texto;ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);ta.focus();ta.select();
+    try{document.execCommand('copy');onCopied();}catch(e){alert('Copie manualmente o texto do prontuário.');}
+    document.body.removeChild(ta);
+  };
+  const onCopied=()=>{
+    btn.classList.add('copied');
+    btn.innerHTML='<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 7l3.5 3.5 6.5-6.5"/></svg> Copiado!';
+    setTimeout(()=>{btn.classList.remove('copied');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="2"/><path d="M11 5V3a2 2 0 0 0-2-2H3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/></svg> Copiar prontuário';},3000);
+  };
+  if(navigator.clipboard?.writeText)
+    navigator.clipboard.writeText(texto).then(onCopied).catch(fallback);
+  else fallback();
+}
+
+// ══ CARDÁPIO VIA IA ═══════════════════════════════
+async function gerarCardapio(){
+  const btn=document.getElementById('btnCard');
+  btn.disabled=true;btn.textContent='⏳ Gerando...';
+  const{pac,alt,mac}=window._ctx||{};
+  const alts=alt?.map(([id])=>R[id]?.n).join(', ')||'nenhum';
+  try{
+    const p=`Nutricionista funcional. Cardápio 1 dia para ${pac?.sexo||'feminino'} ${window._ctx?.idade||'?'}, queixa:${pac?.queixa||'?'}, alterados:${alts}, macros:C${mac?.c||50}%P${mac?.p||25}%G${mac?.g||25}%.
+JSON apenas sem markdown: {"cafe":"detalhado","colacao":"alimentos","almoco":"refeição completa com quantidades","lanche":"alimentos","jantar":"refeição completa","obs":"1 dica específica para este caso"}`;
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:500,messages:[{role:'user',content:p}]})});
+    const d=await r.json();
+    const parsed=JSON.parse(d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    const rf=[{l:'☀️ Café da manhã',k:'cafe'},{l:'🍎 Colação',k:'colacao'},{l:'🍽️ Almoço',k:'almoco'},{l:'🍌 Lanche',k:'lanche'},{l:'🌙 Jantar',k:'jantar'},{l:'💡 Observação',k:'obs'}];
+    document.getElementById('cardapio-grid').innerHTML=rf.map(f=>`<div class="cg-item"><div class="cg-label">${f.l}</div><div class="cg-text">${parsed[f.k]||'-'}</div></div>`).join('');
+    document.getElementById('cardapio-wrap').style.display='none';
+    document.getElementById('cardapio-grid').style.display='grid';
+  }catch(e){btn.disabled=false;btn.textContent='🍽️ Tentar novamente';}
+}
+
+// ══ NOVA ANÁLISE ══════════════════════════════════
+function novaAnalise(){
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('formSection').style.display='block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// Data atual no campo de atendimento
+document.getElementById('pac-data').value=new Date().toISOString().split('T')[0];
+</script>
+</body>
+</html>
